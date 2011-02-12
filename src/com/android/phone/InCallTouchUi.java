@@ -95,7 +95,6 @@ public class InCallTouchUi extends FrameLayout
     private boolean mAllowIncomingCallTouchUi;
     private boolean mAllowInCallTouchUi;
 
-    private boolean mUseRotaryLockscreen = true;
     public InCallTouchUi(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -661,18 +660,11 @@ public class InCallTouchUi extends FrameLayout
      * Apply an animation to hide the incoming call widget.
      */
     private void hideIncomingCallWidget() {
-        if (mUseRotaryLockscreen) {
-            if (mIncomingRotarySelectorCallWidget.getVisibility() != View.VISIBLE
-                || mIncomingRotarySelectorCallWidget.getAnimation() != null) {
-                // Widget is already hidden or in the process of being hidden
-                return;
-            } 
-        } else {
-            if (mIncomingSlidingTabCallWidget.getVisibility() != View.VISIBLE
-                || mIncomingSlidingTabCallWidget.getAnimation() != null) {
-                return;
-            }
-        }
+        if (mIncomingRotarySelectorCallWidget.getVisibility() != View.VISIBLE
+            || mIncomingRotarySelectorCallWidget.getAnimation() != null) {
+            // Widget is already hidden or in the process of being hidden
+            return;
+        } 
         // Hide the incoming call screen with a transition
         AlphaAnimation anim = new AlphaAnimation(1.0f, 0.0f);
         anim.setDuration(IN_CALL_WIDGET_TRANSITION_TIME);
@@ -688,20 +680,11 @@ public class InCallTouchUi extends FrameLayout
 
             public void onAnimationEnd(Animation animation) {
                 // hide the incoming call UI.
-                if (mUseRotaryLockscreen) {
-                    mIncomingRotarySelectorCallWidget.clearAnimation();
-                    mIncomingRotarySelectorCallWidget.setVisibility(View.GONE);
-                } else {
-                    mIncomingSlidingTabCallWidget.clearAnimation();
-                    mIncomingSlidingTabCallWidget.setVisibility(View.GONE);
-                }
+                mIncomingRotarySelectorCallWidget.clearAnimation();
+                mIncomingRotarySelectorCallWidget.setVisibility(View.GONE);
             }
         });
-        if (mUseRotaryLockscreen) {
-            mIncomingRotarySelectorCallWidget.startAnimation(anim);
-        } else {
-            mIncomingSlidingTabCallWidget.startAnimation(anim);
-        }
+        mIncomingRotarySelectorCallWidget.startAnimation(anim);
     }
 
     /**
@@ -710,25 +693,15 @@ public class InCallTouchUi extends FrameLayout
     private void showIncomingCallWidget() {
         // Look up the various UI elements.
         // This needs to be called every Incoming Call to recheck settings
-        mUseRotaryLockscreen = true;
 
             Animation anim = mIncomingRotarySelectorCallWidget.getAnimation();
             if (anim != null) {
                 anim.reset();
-                if (mUseRotaryLockscreen) {
-                    mIncomingRotarySelectorCallWidget.clearAnimation();
-                } else {
-                    mIncomingSlidingTabCallWidget.clearAnimation();
-                }
+                mIncomingRotarySelectorCallWidget.clearAnimation();
             }
-            if (mUseRotaryLockscreen) {
-                //Rotary Widget has no public reset function
-                //mIncomingRotarySelectorCallWidget.reset();
-                mIncomingRotarySelectorCallWidget.setVisibility(View.VISIBLE);
-            } else {
-                mIncomingSlidingTabCallWidget.reset(false);
-                mIncomingSlidingTabCallWidget.setVisibility(View.VISIBLE);
-            }
+            //Rotary Widget has no public reset function
+            //mIncomingRotarySelectorCallWidget.reset();
+            mIncomingRotarySelectorCallWidget.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -743,58 +716,30 @@ public class InCallTouchUi extends FrameLayout
             // since *this* class is the only place that knows that the left
             // handle means "Answer" and the right handle means "Decline".)
             int hintTextResId, hintColorResId;
-            if (mUseRotaryLockscreen) {
-                switch (grabbedState) {
-                    case RotarySelector.NOTHING_GRABBED:
-                        hintTextResId = 0;
-                        hintColorResId = 0;
-                        break;
-                    case RotarySelector.RIGHT_HANDLE_GRABBED:
-                        hintTextResId = R.string.rotate_to_decline;
-                        hintColorResId = R.color.incall_textEnded;  // red
-                        break;
-                    case RotarySelector.LEFT_HANDLE_GRABBED:
-                        // TODO: Use different variants of "Rotate to answer" in some cases
-                        // depending on the phone state, like rotate_to_answer_and_hold
-                        // for a call waiting call, or rotate_to_answer_and_end_active or
-                        // rotate_to_answer_and_end_onhold for the 2-lines-in-use case.
-                        // (Note these are GSM-only cases, though.)
-                        hintTextResId = R.string.rotate_to_answer;
-                        hintColorResId = R.color.incall_textConnected;  // green
-                        break;
-                    default:
-                        Log.e(LOG_TAG, "onGrabbedStateChange: unexpected grabbedState: "
-                              + grabbedState);
-                        hintTextResId = 0;
-                        hintColorResId = 0;
-                        break;
-                }
-            } else {
-                switch (grabbedState) {
-                    case SlidingTab.OnTriggerListener.NO_HANDLE:
-                        hintTextResId = 0;
-                        hintColorResId = 0;
-                        break;
-                    case SlidingTab.OnTriggerListener.LEFT_HANDLE:
-                        // TODO: Use different variants of "Slide to answer" in some cases
-                        // depending on the phone state, like slide_to_answer_and_hold
-                        // for a call waiting call, or slide_to_answer_and_end_active or
-                        // slide_to_answer_and_end_onhold for the 2-lines-in-use case.
-                        // (Note these are GSM-only cases, though.)
-                        hintTextResId = R.string.slide_to_answer;
-                        hintColorResId = R.color.incall_textConnected;  // green
-                        break;
-                    case SlidingTab.OnTriggerListener.RIGHT_HANDLE:
-                        hintTextResId = R.string.slide_to_decline;
-                        hintColorResId = R.color.incall_textEnded;  // red
-                        break;
-                    default:
-                        Log.e(LOG_TAG, "onGrabbedStateChange: unexpected grabbedState: "
-                              + grabbedState);
-                        hintTextResId = 0;
-                        hintColorResId = 0;
-                        break;
-                }
+            switch (grabbedState) {
+                case RotarySelector.NOTHING_GRABBED:
+                    hintTextResId = 0;
+                    hintColorResId = 0;
+                    break;
+                case RotarySelector.RIGHT_HANDLE_GRABBED:
+                    hintTextResId = R.string.rotate_to_decline;
+                    hintColorResId = R.color.incall_textEnded;  // red
+                    break;
+                case RotarySelector.LEFT_HANDLE_GRABBED:
+                    // TODO: Use different variants of "Rotate to answer" in some cases
+                    // depending on the phone state, like rotate_to_answer_and_hold
+                    // for a call waiting call, or rotate_to_answer_and_end_active or
+                    // rotate_to_answer_and_end_onhold for the 2-lines-in-use case.
+                    // (Note these are GSM-only cases, though.)
+                    hintTextResId = R.string.rotate_to_answer;
+                    hintColorResId = R.color.incall_textConnected;  // green
+                    break;
+                default:
+                    Log.e(LOG_TAG, "onGrabbedStateChange: unexpected grabbedState: "
+                          + grabbedState);
+                    hintTextResId = 0;
+                    hintColorResId = 0;
+                    break;
             }
 
             // Tell the InCallScreen to update the CallCard and force the

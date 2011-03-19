@@ -434,6 +434,14 @@ public class CallFeaturesSetting extends PreferenceActivity
         } else if (preference == mVoicemailProviders) {
             final String currentProviderKey = getCurrentVoicemailProviderKey();
             final String newProviderKey = (String)objValue;
+            if (DBG) log("##### newProviderKey = " + newProviderKey + "#####");
+            int mVmUsesGoogleVoice = 0;
+            if (TextUtils.equals(newProviderKey, "com.google.android.apps.googlevoice.VoicemailProviderActivity")) {
+                if (DBG) log("##### Setting system property to launcher googlevoice app from VM shortcut #####");
+                mVmUsesGoogleVoice = 1;
+            }
+            Settings.System.putInt(getContentResolver(),
+                    Settings.System.VM_USES_GOOGLEVOICE, mVmUsesGoogleVoice);
             if (DBG) log("VM provider changes to " + newProviderKey + " from " +
                     mPreviousVMProviderKey);
             if (mPreviousVMProviderKey.equals(newProviderKey)) {
